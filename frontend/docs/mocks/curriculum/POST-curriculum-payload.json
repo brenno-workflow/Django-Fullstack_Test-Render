@@ -1,19 +1,22 @@
 {
-  "name": "Nome da pessoa",
-  "title": "Profissão",
-  "email": "email@email.com",
-  "phone": "999999999",
-  "location": "Cidade/Estado",
-  "avatar": "Icon1",
-  "gender": "Masculino",
-  "pronoun": "Ele/Dele",
+  "id": 1,
+  "user": {
+    "name": "Teste2",
+    "title": "Profissão",
+    "email": "email@email.com",
+    "phone": "999999999",
+    "location": "Cidade/Estado",
+    "avatar": "Icon1",
+    "gender": "Masculino",
+    "pronoun": "Ele/Dele",
+		"description": "Resumo sobre a pessoa"
+  },
   "links": [
     {
       "name": "Nome do link",
       "url": "http://www.link.com"
     }
   ],
-  "description": "Resumo sobre a pessoa",
   "experience": [
     {
       "company": "Nome da empresa",
@@ -58,7 +61,5 @@
         ]
       }
     }
-  ],
-  "acessLevel": null,
-  "published": false
+  ]
 }
