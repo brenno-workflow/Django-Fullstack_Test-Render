@@ -283,7 +283,8 @@ def list(request):
             cv_data = {
                 "name": user.name,
                 "title": user.title,
-                "key": str(user.pk)  # Chave do currículo é o ID do usuário
+                "id": str(user.pk),  # Chave do currículo é o ID do usuário
+                "key": str(user.key)
             }
 
             # Verifica se o usuário tem uma chave estrangeira específica
@@ -304,3 +305,47 @@ def list(request):
     except Exception as e:
         # Em caso de qualquer exceção, retorne uma resposta de erro
         return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+def accessLevel(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            credential_id = data.get('id')
+            access_level = data.get('accessLevel')
+
+            # Obtenha o usuário existente
+            user = User.objects.get(credential_id=credential_id)            
+
+            user = User.objects.get(credential_id=credential_id)
+            user.access_level = access_level
+            user.save()
+
+            return JsonResponse({'message': 'Sucesso ao atualizar o tipo de acesso'})
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+@csrf_exempt
+def published(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            credential_id = data.get('id')
+            published = data.get('published')
+
+            # Obtenha o usuário existente
+            user = User.objects.get(credential_id=credential_id)   
+            user.published = published
+            user.save()
+
+            return JsonResponse({'message': 'Sucesso ao atualizar o status de publicação'})
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'Usuário não encontrado'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Metodo não permitido'}, status=405)

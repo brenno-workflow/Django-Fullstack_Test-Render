@@ -7,5 +7,7 @@ urlpatterns = [
     path('update', views.update, name='update'),
     path('delete', views.delete, name='delete'),
     path('list', views.list, name='list'),
+    path('accessLevel', views.accessLevel, name='accessLevel'),
+    path('published', views.published, name='published')
 ]
 

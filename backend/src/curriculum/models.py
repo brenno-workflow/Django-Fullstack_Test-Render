@@ -1,5 +1,6 @@
 from django.db import models
 from account.models import Credential
+from django.utils.crypto import get_random_string
 
 # Create your models here.
 class User(models.Model):
@@ -16,6 +17,9 @@ class User(models.Model):
     status = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    access_level = models.CharField(max_length=20, default='Private')
+    published = models.BooleanField(default=False)
+    key = models.CharField(max_length=20, default=get_random_string(length=20))
 
 class Link(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

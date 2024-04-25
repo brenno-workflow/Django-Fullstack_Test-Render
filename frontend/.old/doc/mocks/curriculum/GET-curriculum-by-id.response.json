@@ -61,8 +61,8 @@
   ],
   "acessLevel": "Private",
   "published": false,
-  "created": "2024-01-01",
-  "updated": "2024-02-02",
+  "created_at": "2024-01-01",
+  "updated_at": "2024-02-02",
   "key": "key de acesso do cv",
   "id": "id do usuario"
 }
