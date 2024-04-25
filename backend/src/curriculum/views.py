@@ -3,6 +3,8 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from account.models import Credential
 from .models import User, Link, Experience, Education, Skill, Graphic, Topic
+from django.core import serializers
+from django.shortcuts import get_object_or_404
 
 @csrf_exempt
 def create(request):
@@ -105,10 +107,10 @@ def update(request):
             print('testeeeee')
 
             # Recuperar os IDs das entradas relacionadas
-            link_query = Link.objects.filter(user=user)
-            print(f'link_query: {link_query}')
-            link_ids = list(link_query.values_list('id', flat=True))
-            print(f'link_ids: {link_ids}')
+            #link_query = Link.objects.filter(user=user)
+            #print(f'link_query: {link_query}')
+            #link_ids = list(link_query.values_list('id', flat=True))
+            #print(f'link_ids: {link_ids}')
             link_query = Link.objects.filter(user=user)
             link_ids = [link.id for link in link_query]
             print(f'link_ids: {link_ids}')
@@ -349,3 +351,90 @@ def published(request):
             return JsonResponse({'error': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Metodo não permitido'}, status=405)
+    
+@csrf_exempt
+def profile(request):
+    if request.method == 'GET':
+
+        data = json.loads(request.body.decode('utf-8'))
+        credential_id = data.get('id')
+
+        # Obtenha o usuário existente
+        user = User.objects.get(credential_id=credential_id)
+        user_data = {
+            "name": user.name,
+            "title": user.title,
+            "email": user.email,
+            "phone": user.phone,
+            "location": user.location,
+            "avatar": user.avatar,
+            "gender": user.gender,
+            "pronoun": user.pronoun,
+            "description": user.description,
+            "accessLevel": user.access_level,
+            "published": user.published,
+            "created_at": user.created_at,
+            "updated_at": user.updated_at,
+            "key": user.key,
+            "id": user.id
+        }
+
+        links = Link.objects.filter(user=user)
+        links_data = [{"name": link.name, "url": link.url} for link in links]
+
+        experiences = Experience.objects.filter(user=user)
+        experiences_data = [{
+            "company": experience.company,
+            "position": experience.position,
+            "period": experience.period,
+            "description": experience.description
+        } for experience in experiences]
+
+        educations = Education.objects.filter(user=user)
+        educations_data = [{
+            "institution": education.institution,
+            "course": education.course,
+            "period": education.period,
+            "description": education.description
+        } for education in educations]
+
+        skills = Skill.objects.filter(user=user)
+        skills_data = [skill.name for skill in skills]
+
+        custom_data = []
+        graphics = Graphic.objects.filter(user=user)
+        for graphic in graphics:
+            custom_data.append({
+                "title": graphic.title,
+                "description": graphic.description,
+                "topicType": {
+                    "type": graphic.type,
+                    "description": graphic.description,
+                    "percentage": graphic.percentage,
+                    "color": graphic.color
+                }
+            })
+
+        topics = Topic.objects.filter(user=user)
+        for topic in topics:
+            custom_data.append({
+                "title": topic.title,
+                "description": topic.description,
+                "topicType": {
+                    "type": topic.type,
+                    "topics": topic.topics
+                }
+            })
+
+        response_data = {
+            "user": user_data,
+            "links": links_data,
+            "experience": experiences_data,
+            "education": educations_data,
+            "skills": skills_data,
+            "Custom": custom_data
+        }
+
+        return JsonResponse(response_data)
+    else:
+        return JsonResponse({"error": "Only POST requests are allowed."})
