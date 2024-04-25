@@ -239,7 +239,6 @@ def delete(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body.decode('utf-8'))
-
             credential_id = data.get('id')
 
             # Obtenha o usuário existente
@@ -268,6 +267,10 @@ def delete(request):
 @csrf_exempt
 def list(request):
     try:
+
+        data = json.loads(request.body.decode('utf-8'))
+        credential_id = data.get('id')
+        
         # Consulta todos os usuários (currículos)
         users = User.objects.all()
 
@@ -283,11 +286,11 @@ def list(request):
                 "key": str(user.pk)  # Chave do currículo é o ID do usuário
             }
 
-            # Adiciona o currículo à lista correspondente
-            if user.status:
-                cvs.append(cv_data)
-            else:
+            # Verifica se o usuário tem uma chave estrangeira específica
+            if user.credential_id == credential_id:
                 my_cvs.append(cv_data)
+            else:
+                cvs.append(cv_data)
 
         # Cria o objeto de resposta com os currículos formatados
         response_data = {
