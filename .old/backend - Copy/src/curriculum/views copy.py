@@ -1,7 +1,7 @@
+
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
-from account.models import Credential
 from .models import User, Link, Experience, Education, Skill, Graphic, Topic
 
 @csrf_exempt
@@ -12,24 +12,21 @@ def create(request):
             data = json.loads(request.body.decode('utf-8'))
             print(data)
 
-            credential_id = data.get('id')
-            print(f'credential_id: {credential_id}')
-
-            # Inserir dados do usuário
-            user_data = data['user']
-            user = User.objects.create(
-                name=user_data['name'],
-                title=user_data['title'],
-                email=user_data['email'],
-                phone=user_data['phone'],
-                location=user_data['location'],
-                avatar=user_data['avatar'],
-                gender=user_data['gender'],
-                pronoun=user_data['pronoun'],
-                description=user_data['description'],
-                credential_id=credential_id
-            )
+            id = data.get('id')
             
+            # Crie o usuário
+            user = User.objects.create(
+                name=data['name'],
+                title=data['title'],
+                email=data['email'],
+                phone=data['phone'],
+                location=data['location'],
+                avatar=data['avatar'],
+                gender=data['gender'],
+                pronoun=data['pronoun'],
+                description=data['description']
+            )
+
             # Crie os links
             for link_data in data['links']:
                 Link.objects.create(user=user, **link_data)
@@ -79,59 +76,44 @@ def update(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body.decode('utf-8'))
-            print(f'data: {data}')
+            print(data)
 
-            credential_id = data.get('id')
-            print(f'credential_id: {credential_id}')
-
-            user_data = data['user']
-            print(f'user_data: {user_data}')
+            id = data.get('id')
 
             # Obtenha o usuário existente
-            user = User.objects.get(credential_id=credential_id)
-            print(f'user: {user}')
+            user = User.objects.get(pk=id)
 
             # Atualize os campos do usuário
-            user.name = user_data['name']
-            user.title = user_data['title']
-            user.email = user_data['email']
-            user.phone = user_data['phone']
-            user.location = user_data['location']
-            user.avatar = user_data['avatar']
-            user.gender = user_data['gender']
-            user.pronoun = user_data['pronoun']
-            user.description = user_data['description']
+            user.name = data['name']
+            user.title = data['title']
+            user.email = data['email']
+            user.phone = data['phone']
+            user.location = data['location']
+            user.avatar = data['avatar']
+            user.gender = data['gender']
+            user.pronoun = data['pronoun']
+            user.description = data['description']
             user.save()
-            print('testeeeee')
 
             # Recuperar os IDs das entradas relacionadas
-            link_query = Link.objects.filter(user=user)
-            print(f'link_query: {link_query}')
-            link_ids = list(link_query.values_list('id', flat=True))
-            print(f'link_ids: {link_ids}')
-            link_query = Link.objects.filter(user=user)
-            link_ids = [link.id for link in link_query]
-            print(f'link_ids: {link_ids}')
-            
-            experience_query = Experience.objects.filter(user=user)
-            experience_ids = [exp.id for exp in experience_query]
-            print(f'experience_ids: {experience_ids}')
+            link_ids = list(Link.objects.filter(user=user).values_list('id', flat=True))
+            experience_ids = list(Experience.objects.filter(user=user).values_list('id', flat=True))
+            education_ids = list(Education.objects.filter(user=user).values_list('id', flat=True))
+            skill_ids = list(Skill.objects.filter(user=user).values_list('id', flat=True))
+            graphic_ids = list(Graphic.objects.filter(user=user).values_list('id', flat=True))
+            topic_ids = list(Topic.objects.filter(user=user).values_list('id', flat=True))
 
-            education_query = Education.objects.filter(user=user)
-            education_ids = [edu.id for edu in education_query]
-            print(f'education_ids: {education_ids}')
-
-            skill_query = Skill.objects.filter(user=user)
-            skill_ids = [skill.id for skill in skill_query]
-            print(f'skill_ids: {skill_ids}')
-
-            graphic_query = Graphic.objects.filter(user=user)
-            graphic_ids = [graphic.id for graphic in graphic_query]
-            print(f'graphic_ids: {graphic_ids}')
-
-            topic_query = Topic.objects.filter(user=user)
-            topic_ids = [topic.id for topic in topic_query]
-            print(f'topic_ids: {topic_ids}')
+            # Atualize os links
+            for link_data in data['links']:
+                link_id = link_ids.pop(0) if link_ids else None
+                if link_id:
+                    print(f'link_id: {link_id}')
+                    link = Link.objects.get(pk=link_id)
+                    link.name = link_data['name']
+                    link.url = link_data['url']
+                    link.save()
+                else:
+                    Link.objects.create(user=user, **link_data)
             
             # Atualize as experiências
             for exp_data in data['experience']:
@@ -146,18 +128,6 @@ def update(request):
                     experience.save()
                 else:
                     Experience.objects.create(user=user, **exp_data)
-
-            # Atualize os links
-            for link_data in data['links']:
-                link_id = link_ids.pop(0) if link_ids else None
-                if link_id:
-                    print(f'link_id: {link_id}')
-                    link = Link.objects.get(pk=link_id)
-                    link.name = link_data['name']
-                    link.url = link_data['url']
-                    link.save()
-                else:
-                    Link.objects.create(user=user, **link_data)
             
             # Atualize as educações
             for edu_data in data['education']:
@@ -240,10 +210,10 @@ def delete(request):
         try:
             data = json.loads(request.body.decode('utf-8'))
 
-            credential_id = data.get('id')
+            id = data.get('id')
 
             # Obtenha o usuário existente
-            user = User.objects.get(credential_id=credential_id)
+            user = User.objects.get(pk=id)
             
             # Exclui todas as entradas relacionadas ao usuário em todas as tabelas
             Link.objects.filter(user=user).delete()

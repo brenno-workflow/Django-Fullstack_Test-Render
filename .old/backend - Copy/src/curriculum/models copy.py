@@ -1,9 +1,8 @@
 from django.db import models
-from account.models import Credential
+from accounts.models import Credential
 
 # Create your models here.
 class User(models.Model):
-    credential = models.ForeignKey(Credential, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     title = models.CharField(max_length=100)
     email = models.CharField(max_length=100)
