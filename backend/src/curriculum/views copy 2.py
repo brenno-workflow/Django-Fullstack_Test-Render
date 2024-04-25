@@ -12,12 +12,28 @@ def create(request):
             data = json.loads(request.body.decode('utf-8'))
             print(data)
 
-            credential_id = data.get('id')
-            print(f'credential_id: {credential_id}')
+            credential_id = data.get('credential_id')
+            credential, created = Credential.objects.get_or_create(id=credential_id)
+            
+            # Crie os usuários
+            for user_data in data['user']:
+                User.objects.create(
+                    credential_id=credential_id,
+                    name=user_data['name'],
+                    title=user_data['title'],
+                    email=user_data['email'],
+                    phone=user_data['phone'],
+                    location=user_data['location'],
+                    avatar=user_data['avatar'],
+                    gender=user_data['gender'],
+                    pronoun=user_data['pronoun'],
+                    description=user_data['description']
+                )
 
             # Inserir dados do usuário
             user_data = data['user']
             user = User.objects.create(
+                credential=credential,
                 name=user_data['name'],
                 title=user_data['title'],
                 email=user_data['email'],
@@ -26,8 +42,7 @@ def create(request):
                 avatar=user_data['avatar'],
                 gender=user_data['gender'],
                 pronoun=user_data['pronoun'],
-                description=user_data['description'],
-                credential_id=credential_id
+                description=user_data['description']
     )
 
             # Crie os links
@@ -81,36 +96,30 @@ def update(request):
             data = json.loads(request.body.decode('utf-8'))
             print(data)
 
-            credential_id = data.get('id')
-            print(f'credential_id: {credential_id}')
+            credential_id = data.get('credential_id')
+
+            # Obtenha o usuário existente
+            user = User.objects.get(pk=credential_id)
+
+            # Atualize os campos do usuário
+            user.name = data['name']
+            user.title = data['title']
+            user.email = data['email']
+            user.phone = data['phone']
+            user.location = data['location']
+            user.avatar = data['avatar']
+            user.gender = data['gender']
+            user.pronoun = data['pronoun']
+            user.description = data['description']
+            user.save()
 
             # Recuperar os IDs das entradas relacionadas
-            user_ids = list(User.objects.filter(credential_id=credential_id).values_list('id', flat=True))
             link_ids = list(Link.objects.filter(credential_id=credential_id).values_list('id', flat=True))
             experience_ids = list(Experience.objects.filter(credential_id=credential_id).values_list('id', flat=True))
             education_ids = list(Education.objects.filter(credential_id=credential_id).values_list('id', flat=True))
             skill_ids = list(Skill.objects.filter(credential_id=credential_id).values_list('id', flat=True))
             graphic_ids = list(Graphic.objects.filter(credential_id=credential_id).values_list('id', flat=True))
             topic_ids = list(Topic.objects.filter(credential_id=credential_id).values_list('id', flat=True))
-
-            # Atualize os links
-            for user_data in data['user']:
-                print(f'user_data: {user_data}')
-                print(f'user_ids: {user_ids} \n {link_ids}')
-                user_id = user_ids.pop(0) if user_ids else None
-                if user_id:
-                    print(f'link_id: {link_id}')
-                    user = User.objects.get(pk=user_id)
-                    user.name = user_data['name']
-                    user.title = user_data['title']
-                    user.email = user_data['email']
-                    user.phone = user_data['phone']
-                    user.location = user_data['location']
-                    user.avatar = user_data['avatar']
-                    user.gender = user_data['gender']
-                    user.pronoun = user_data['pronoun']
-                    user.description = user_data['description']
-                    user.save()            
 
             # Atualize os links
             for link_data in data['links']:
@@ -219,7 +228,7 @@ def delete(request):
         try:
             data = json.loads(request.body.decode('utf-8'))
 
-            credential_id = data.get('id')
+            credential_id = data.get('credential_id')
 
             # Obtenha o usuário existente
             user = User.objects.get(pk=credential_id)

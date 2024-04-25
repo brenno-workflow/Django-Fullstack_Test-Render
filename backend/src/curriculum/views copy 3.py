@@ -82,7 +82,6 @@ def update(request):
             print(data)
 
             credential_id = data.get('id')
-            print(f'credential_id: {credential_id}')
 
             # Recuperar os IDs das entradas relacionadas
             user_ids = list(User.objects.filter(credential_id=credential_id).values_list('id', flat=True))
@@ -95,12 +94,10 @@ def update(request):
 
             # Atualize os links
             for user_data in data['user']:
-                print(f'user_data: {user_data}')
-                print(f'user_ids: {user_ids} \n {link_ids}')
                 user_id = user_ids.pop(0) if user_ids else None
                 if user_id:
                     print(f'link_id: {link_id}')
-                    user = User.objects.get(pk=user_id)
+                    user = User.objects.get(pk=credential_id)
                     user.name = user_data['name']
                     user.title = user_data['title']
                     user.email = user_data['email']
